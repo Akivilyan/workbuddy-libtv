@@ -1,0 +1,65 @@
+# ── 多媒体素材：体积大、可再生，一律不入库 ──
+# （成片、抽帧、设定图、参考图等留在本地；仓库只留文本资产）
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+*.m4v
+*.flv
+*.wmv
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.bmp
+*.tif
+*.tiff
+*.heic
+*.psd
+*.ai
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+*.ogg
+
+# ── 临时工作区 ──
+# .tmp 自述「内容随时可清，不含任何资产」，且其下 mcp_probe/ 落有真实 OAuth
+# client_secret 与 access_token —— 绝不可入库。高价值中间产物已吸收进 参考文档/。
+.tmp/
+
+# ── LibTV CLI 本地配置与凭据 ──
+.libtv/
+credentials.json
+*.credentials.json
+
+# ── 二进制与下载包：可再获取，不入库 ──
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+*.param
+*.zip
+*.7z
+*.rar
+
+# ── Python ──
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# ── 系统 / 编辑器 ──
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# ── 日志 ──
+*.log
