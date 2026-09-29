@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LibTV Remote MCP 能力盘点 · 2026-09-23</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1d212a; --line:#282d38;
+    --fg:#e8ecf3; --dim:#98a2b3; --dim2:#6b7484;
+    --ok:#3ddc97; --warn:#f5b544; --bad:#f2686e; --acc:#5aa9f5; --acc2:#8b7bf0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+    font-size:14.5px;line-height:1.7;padding:40px 24px 64px}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:28px}
+  h1{font-size:25px;margin:0 0 10px}
+  .sub{color:var(--dim);font-size:13.5px}
+  h2{font-size:17px;margin:34px 0 14px;padding-left:11px;border-left:3px solid var(--acc)}
+  h3{font-size:14.5px;margin:20px 0 8px;color:#cfd6e2}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-weight:600;font-size:12.5px;background:#141821}
+  tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#1b1f28}
+  .mk{font-family:"Cascadia Mono",Consolas,monospace;font-size:12.5px;color:#a8d8ff;word-break:break-all}
+  .ok{color:var(--ok);font-weight:600}
+  .no{color:var(--dim2)}
+  .hi{color:var(--acc2);font-weight:600}
+  .dim{color:var(--dim2)}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:20px;
+    border:1px solid;margin-left:5px;vertical-align:1px}
+  .b-ok{color:var(--ok);border-color:#245c46;background:#12251d}
+  .b-warn{color:var(--warn);border-color:#5c4a20;background:#241d10}
+  .b-bad{color:var(--bad);border-color:#5c292c;background:#241416}
+  .b-acc{color:var(--acc);border-color:#22405c;background:#101d2b}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 6px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .stat .n{font-size:24px;font-weight:600;line-height:1.2}
+  .stat .l{color:var(--dim);font-size:12.5px;margin-top:4px}
+  .note{background:#141821;border:1px solid var(--line);border-left:3px solid var(--acc);
+    border-radius:8px;padding:14px 18px;margin-top:14px;font-size:13.5px;color:#cfd6e2}
+  .note.warn{border-left-color:var(--warn)}
+  .note.bad{border-left-color:var(--bad)}
+  .note.ok{border-left-color:var(--ok)}
+  .note strong{color:var(--fg)}
+  ul{margin:8px 0 0;padding-left:20px}
+  li{margin:5px 0}
+  li::marker{color:var(--dim2)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin-top:12px}
+  .mod{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px;margin-top:12px}
+  .m{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 17px}
+  .m h3{margin:0 0 4px;font-size:14px}
+  .m .s{color:var(--dim);font-size:12.5px;margin-bottom:8px}
+  .m .t{font-family:"Cascadia Mono",Consolas,monospace;font-size:11.8px;color:#9fc9f0;line-height:1.6;word-break:break-all}
+  .m .e{color:var(--acc2);font-size:11.8px;margin-top:6px}
+  footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--dim2);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>LibTV Remote MCP 能力盘点</h1>
+  <div class="sub">实测日期 2026-09-23 · 通道 <span class="mk">https://mcp.liblib.tv/mcp</span> · 服务版本 <span class="mk">libtv-remote-mcp 1.29.1</span> · 协议 <span class="mk">2025-06-18</span><br>
+  账号 Akivilyan（进阶版VIP 连续包年）· 全程只读探测，未产生任何积分消耗</div>
+</header>
+
+<h2>一、结论</h2>
+<div class="stats">
+  <div class="stat"><div class="n ok">48</div><div class="l">可调用工具</div></div>
+  <div class="stat"><div class="n ok">9</div><div class="l">业务能力模块</div></div>
+  <div class="stat"><div class="n ok">43</div><div class="l">视频模型可查</div></div>
+  <div class="stat"><div class="n ok">3</div><div class="l">MCP App 界面资源</div></div>
+  <div class="stat"><div class="n">1h</div><div class="l">access_token 有效期（可刷新）</div></div>
+</div>
+
+<div class="note ok">
+<strong>1. MCP 通道确认可用，且已端到端跑通。</strong>完整走完「动态客户端注册 → OAuth 2.1 + PKCE 授权 → 换 token → initialize → tools/list → 实际调用」全链路，每一步都拿到 200 / 201。不是"看起来能用"，是真的调通并读回了真实数据。
+</div>
+
+<div class="note ok">
+<strong>2. 能力面明显大于 CLI —— 你之前的判断是对的。</strong>CLI 覆盖的是"建节点 + 触发 + 上传下载"这条主干；MCP 在这之上多出<strong>五大块</strong>：成片合成导出、媒体语义理解、Script V2 表与时间线编辑、生成前零成本预检、远端 Agent 委托。
+</div>
+
+<div class="note warn">
+<strong>3. 技术上可以接进 WorkBuddy，但有一处需要你拍板。</strong>MCP 不依赖本地 CLI（<span class="mk">localRuntimeRequired: false</span>），token 可自动续期。代价是授权范围包含 <span class="mk">project:write / media:write / task:write / export:write</span> —— 接进来之后，<strong>调用生成接口就是花积分</strong>，护栏得靠流程（先报方案）而不是靠权限。
+</div>
+
+<h2>二、实测通过清单（逐项证据）</h2>
+<table>
+<thead><tr><th style="width:190px">环节</th><th style="width:90px">结果</th><th>证据</th></tr></thead>
+<tbody>
+<tr><td>动态客户端注册</td><td class="ok">201</td><td><span class="mk">POST /register</span> → 返回 <span class="mk">client_id</span> + <span class="mk">client_secret</span>（secret 有效期约 90 天）</td></tr>
+<tr><td>OAuth 授权码 + PKCE</td><td class="ok">200</td><td>浏览器授权 → 本地 <span class="mk">127.0.0.1:8765</span> 回调收到 code，state 校验通过</td></tr>
+<tr><td>token 交换</td><td class="ok">200</td><td><span class="mk">expires_in=3600</span>，scope 六项全给（与元数据声明一致）</td></tr>
+<tr><td>refresh_token 续期</td><td class="ok">200</td><td>新 token 签发成功，<strong>且 refresh_token 发生旋转</strong> → 可长期自动续期，不必反复授权</td></tr>
+<tr><td>initialize</td><td class="ok">200</td><td>serverInfo <span class="mk">libtv-remote-mcp 1.29.1</span>，protocolVersion <span class="mk">2025-06-18</span>，capabilities: tools / resources / prompts</td></tr>
+<tr><td>tools/list</td><td class="ok">200</td><td><strong>48 个工具</strong>，含完整 JSON Schema</td></tr>
+<tr><td>resources/list</td><td class="ok">200</td><td>3 个 <span class="mk">text/html;profile=mcp-app</span> 界面资源：<span class="mk">libtv-analysis</span> / <span class="mk">libtv-media</span> / <span class="mk">libtv-media-legacy</span>（带 CSP 白名单）</td></tr>
+<tr><td>prompts/list</td><td class="ok">200</td><td>空数组 —— 该通道不提供 prompt 模板</td></tr>
+<tr><td>doctor</td><td class="ok">ready</td><td><span class="mk">status: ready</span>、<span class="mk">environment: prod</span>、<span class="mk">transport: streamable-http</span>、<span class="mk">toolRegistry.count: 48</span>、<span class="mk">localRuntimeRequired: false</span></td></tr>
+<tr><td>account_user</td><td class="ok">200</td><td>userUuid <span class="mk">fc9931b6f2da4dc79063487be531d6f5</span>，昵称 Akivilyan，账号等级 40</td></tr>
+<tr><td>list_projects</td><td class="ok">200</td><td>读回真实画布列表，含 <span class="mk">wan3.0多镜头测试-A组</span>、<span class="mk">完整工作流·桌面小人</span> 等</td></tr>
+<tr><td>target_project</td><td class="ok">200</td><td>返回 <span class="mk">projectContext</span>（不透明令牌）+ <span class="mk">editorUrl</span> + 浏览器交接策略</td></tr>
+<tr><td>read_project</td><td class="ok">200</td><td>A 组读回 <strong>3 节点 / 2 边</strong>：参考-角色设定图、A组-多镜头15s、参考-桌面实景 —— <strong>与 CLI 读到的完全一致</strong></td></tr>
+<tr><td>get_model(Wan 3.0)</td><td class="ok">200</td><td>返回完整 schema：<span class="mk">duration 2–30</span>、<span class="mk">resolution 480P/720P/1080P</span>、<span class="mk">mixed2videoConfig imageMax 10</span>、<span class="mk">videoExtend2video [1,15]</span></td></tr>
+<tr><td>search_models(video)</td><td class="ok">200</td><td><strong>43 个视频模型</strong>，含 <span class="mk">pricingRule</span>、<span class="mk">estimatedTime</span>、vip 标记</td></tr>
+<tr><td>validate_generation_plan</td><td class="ok">ready</td><td><span class="mk">valid: true</span>、<span class="mk">persisted: false</span> —— <strong>预检不写画布、不花积分</strong>，却给出最终请求体（见 §五）</td></tr>
+</tbody>
+</table>
+
+<h2>三、九大能力模块（服务端自述业务地图）</h2>
+<div class="sub" style="margin-bottom:6px">来源：<span class="mk">get_capabilities</span>，capabilityContractVersion 3。九模块的 <span class="mk">pluginSupport</span> 均为 partial 或 discovery-only，<span class="mk">parityVerified</span> 全为 false。</div>
+<div class="mod">
+
+<div class="m">
+  <h3>1. 项目与画布 <span class="badge b-acc">与 CLI 重叠</span></h3>
+  <div class="s">管理项目、节点、引用连线、分组和画布布局。</div>
+  <div class="t">list_projects · create_project · target_project · update_project · read_project_context · read_project · read_node · get_project_snapshot · create_node · update_node · delete_node · manage_group</div>
+  <div class="e">入口：list_projects / read_project / create_node / manage_group</div>
+</div>
+
+<div class="m">
+  <h3>2. 图片创作 <span class="badge b-acc">与 CLI 重叠</span></h3>
+  <div class="s">查询图片模型与参数，生成、参考编辑并回读图片结果。</div>
+  <div class="t">search_models · get_model · create_node · update_node · generation_submit · task_status · task_cancel · show_generation_result · inspect_media</div>
+  <div class="e">入口：create_node / update_node / generation_submit</div>
+</div>
+
+<div class="m">
+  <h3>3. 视频创作 <span class="badge b-ok">含 CLI 没有的预检</span></h3>
+  <div class="s">查询视频模型，预检引用与模式，准备、生成、编辑及回读视频。</div>
+  <div class="t">search_models · get_model · recommend_video_models · validate_generation_plan · generate_video · create_node · update_node · generation_submit · task_status · task_cancel · show_generation_result · inspect_media</div>
+  <div class="e">入口：generate_video / create_node / update_node / generation_submit</div>
+</div>
+
+<div class="m">
+  <h3>4. 音频创作 <span class="badge b-acc">与 CLI 部分重叠</span></h3>
+  <div class="s">查询音频模型和参数，提交生成并回读音频结果。</div>
+  <div class="t">search_models · get_model · create_node · update_node · generation_submit · task_status · task_cancel · show_generation_result · inspect_media</div>
+  <div class="e">入口：create_node / update_node / generation_submit</div>
+</div>
+
+<div class="m">
+  <h3>5. 剧本与分镜 <span class="badge b-ok">CLI 基本没有</span></h3>
+  <div class="s">创作文本、剧本和分镜，编辑 Script V2、资产关联与镜头连续性。</div>
+  <div class="t">create_node · create_script_v2 · update_node · read_script_v2 · edit_script_v2 · get_project_snapshot · check_continuity · task_status · task_cancel</div>
+  <div class="e">入口：create_script_v2 / read_script_v2 / edit_script_v2 / check_continuity</div>
+</div>
+
+<div class="m">
+  <h3>6. 剪辑与合成 <span class="badge b-ok">CLI 没有</span></h3>
+  <div class="s">编辑时间线、对齐音频，执行基础音视频组合和导出。</div>
+  <div class="t">read_timeline · apply_timeline_edit · create_node · update_node · export_readiness · export_video · export_status · task_status · task_cancel</div>
+  <div class="e">入口：read_timeline / apply_timeline_edit / export_video</div>
+</div>
+
+<div class="m">
+  <h3>7. 素材与交付 <span class="badge b-ok">CLI 只有黑盒 upload</span></h3>
+  <div class="s">上传、审核、检查、浏览、预览并下载项目素材。</div>
+  <div class="t">upload_ticket · upload_complete · resource_info · inspect_media · browse_project_media · show_generation_result</div>
+  <div class="e">入口：inspect_media / browse_project_media</div>
+</div>
+
+<div class="m">
+  <h3>8. 媒体理解与分析 <span class="badge b-warn">discovery-only</span></h3>
+  <div class="s">对授权素材执行视频内容分析、语音转写和受限证据提取。</div>
+  <div class="t">inspect_media · task_status · task_cancel</div>
+  <div class="e">服务端标注 pluginSupport = discovery-only（仅能发现，未承诺完整实现）</div>
+</div>
+
+<div class="m">
+  <h3>9. Agent 委托 <span class="badge b-ok">CLI 没有</span></h3>
+  <div class="s">按明确请求启动或续跑远端 Canvas Agent，并回读、纠偏和停止精确运行。</div>
+  <div class="t">search_skill_templates · ask_followup_questions · run_agent · steer_agent_run · get_agent_status · show_agent_progress · answer_agent_questions · stop_agent_run</div>
+  <div class="e">入口：run_agent（另有 7 个控制类工具）</div>
+</div>
+
+</div>
+
+<h2>四、CLI vs MCP：能力差在哪</h2>
+<table>
+<thead><tr><th style="width:170px">能力</th><th style="width:110px">CLI</th><th style="width:110px">MCP</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>项目 / 节点 / 分组 CRUD</td><td class="ok">有</td><td class="ok">有</td><td>双方能力重叠，读同一份画布数据（已交叉验证一致）</td></tr>
+<tr><td>上传 / 下载</td><td class="ok">有</td><td class="ok">有</td><td>MCP 拆成票据制分片上传（<span class="mk">upload_ticket</span> 单文件上限 5 GiB），CLI 是单命令封装</td></tr>
+<tr><td>模型检索</td><td class="ok">有</td><td class="ok">有</td><td>MCP 多一个 <span class="mk">recommend_video_models</span>（按任务控制面推荐）</td></tr>
+<tr><td>触发生成</td><td class="ok">有</td><td class="ok">有</td><td>CLI 用 <span class="mk">node --run</span>；MCP 用 <span class="mk">generate_video</span> / <span class="mk">generation_submit</span></td></tr>
+<tr><td><strong>生成前预检</strong></td><td class="no">无</td><td class="ok hi">有</td><td><span class="mk">validate_generation_plan</span>：零成本校验模型/模式/引用/参数，返回最终请求体</td></tr>
+<tr><td><strong>任务回读 / 取消</strong></td><td class="no">无</td><td class="ok hi">有</td><td><span class="mk">task_status</span> / <span class="mk">task_cancel</span> —— CLI 触发后无法查任务状态</td></tr>
+<tr><td><strong>成片合成导出</strong></td><td class="no">无</td><td class="ok hi">有</td><td><span class="mk">export_readiness</span> → <span class="mk">export_video</span> → <span class="mk">export_status</span>。CLI 只能逐节点下载文件</td></tr>
+<tr><td><strong>Script V2 表</strong></td><td class="no">仅 script 分镜图组</td><td class="ok hi">有</td><td>建 / 读 / 改 Shot 行，带 revision 与幂等事务</td></tr>
+<tr><td><strong>时间线编辑</strong></td><td class="no">无</td><td class="ok hi">有</td><td><span class="mk">read_timeline</span> / <span class="mk">apply_timeline_edit</span></td></tr>
+<tr><td><strong>媒体语义理解</strong></td><td class="no">无</td><td class="ok hi">有</td><td><span class="mk">inspect_media</span>（内容分析 / 转写 / 证据提取）、<span class="mk">check_continuity</span>（镜头连续性）</td></tr>
+<tr><td><strong>生产快照</strong></td><td class="no">无</td><td class="ok hi">有</td><td><span class="mk">get_project_snapshot</span>：revision 绑定，分页复用，版本漂移会被拒</td></tr>
+<tr><td><strong>素材浏览</strong></td><td class="no">无</td><td class="ok hi">有</td><td><span class="mk">browse_project_media</span>：分页浏览项目媒体</td></tr>
+<tr><td><strong>Agent 委托</strong></td><td class="no">无</td><td class="ok hi">有</td><td>8 个工具：启动 / 纠偏 / 答题 / 进度 / 停止 / 模板检索</td></tr>
+<tr><td><strong>业务地图</strong></td><td class="no">无</td><td class="ok hi">有</td><td><span class="mk">get_capabilities</span>：自述 9 模块与工具归组</td></tr>
+<tr><td>连接自检</td><td class="no">account info</td><td class="ok">有</td><td><span class="mk">doctor</span>：身份 + 连接状态 + 工具注册表指纹</td></tr>
+<tr><td>本地依赖</td><td class="no">需装二进制</td><td class="ok hi">无</td><td><span class="mk">localRuntimeRequired: false</span>，纯远端</td></tr>
+</tbody>
+</table>
+
+<h2>五、关键发现与坑</h2>
+
+<div class="note ok">
+<strong>validate_generation_plan 是这次最有价值的发现。</strong>它零成本、不改画布（<span class="mk">persisted: false</span>），却把云端最终要发的请求体完整吐出来 —— 包括 <span class="mk">imageList</span>（每张图的 url 与像素尺寸）、<span class="mk">imageListOrder</span> 与 <span class="mk">mixedListOrder</span>、<span class="mk">advancedSettings.extendPrompt</span>、以及模型解析结果（<span class="mk">requestedMode → modeType</span>）。<br>
+实测示例（A 组画布，Wan 3.0 / mixed2video / 15s / 720P / 2 张参考图）返回 <span class="mk">valid: true, status: ready</span>，并把引用名精确解析成 nodeId。<br>
+<strong>对我们的流程意味着：</strong>「生成前必须报方案」这条铁律，从"我口述参数"升级为"零成本跑一次预检，把客观请求体摆给你看"。方案对不对、图挂没挂上、参数有没有被默认值覆盖，全部在花积分之前可见。
+</div>
+
+<div class="note warn">
+<strong>坑 1：参数命名不统一，两套风格混用。</strong>同一份工具清单里，<span class="mk">target_project</span> 要 <span class="mk">projectId</span>、<span class="mk">generate_video</span> 要 <span class="mk">idempotencyKey</span>（camelCase），而 <span class="mk">export_video</span>、<span class="mk">generation_submit</span> 要 <span class="mk">project_id</span>、<span class="mk">idempotency_key</span>（snake_case）。<strong>凭直觉传参必错</strong> —— 一定要先读该工具自己的 inputSchema。我第一次就踩了（用 <span class="mk">project_id</span> 调 <span class="mk">target_project</span>，报 pydantic missing 错误）。
+</div>
+
+<div class="note warn">
+<strong>坑 2：<span class="mk">enableSound</span> 在 MCP 里是字符串 <span class="mk">"on"/"off"</span>，不是布尔。</strong>预检直接报错 <span class="mk">"params.settings.enableSound=false 不在允许范围。可选: on, off"</span>。CLI 侧我们用的也是字符串，一致；但如果按 JSON 直觉传 <span class="mk">false</span> 会被拒。
+</div>
+
+<div class="note warn">
+<strong>坑 3：access_token 只有 1 小时，refresh_token 会旋转。</strong>每次刷新都会换发新的 refresh_token，必须落盘最新的那个，旧的立刻失效。好消息是续期链路已验证可用（200），所以接入后不需要你反复点授权。
+</div>
+
+<div class="note">
+<strong>其他值得记的细节：</strong>
+<ul>
+<li><span class="mk">Wan 3.0</span> 的 schema 里带着 <span class="mk">supportAttachment</span> —— 支持 docx/xlsx/pptx/pdf/txt/md 等文档（上限 1 个、100MB）与网页链接输入。这与模型描述"支持文档与网页输入"对应，是 CLI 侧没利用过的输入通道。</li>
+<li>MCP 读回的 <span class="mk">editorUrl</span> 形如 <span class="mk">www.liblib.tv/canvas?projectId=…&amp;launchSurface=codex</span>，并附带一套浏览器交接策略（复用标签页、失败则回退为返回链接）。这是把"点开画布看一眼"也纳入了工具链。</li>
+<li><span class="mk">read_project</span> 的 <span class="mk">mediaPersistence</span> 明确声明："存在绑定 ≠ 媒体可用或可播放"，不做过强断言 —— 服务端在这点上比预期严谨。</li>
+<li>服务端九模块全部标着 <span class="mk">parityVerified: false</span>，即官方未承诺 MCP 与本地插件能力完全对齐。</li>
+</ul>
+</div>
+
+<h2>六、建议下一步</h2>
+<div class="card">
+<ul>
+<li><strong>建议接入，但按"只读先行"的节奏。</strong>先把 MCP 写进 <span class="mk">~/.workbuddy/mcp.json</span>，授权后先用 <span class="mk">doctor</span> / <span class="mk">read_project</span> / <span class="mk">validate_generation_plan</span> 三个只读工具替换掉现在靠 CLI 猜测的部分 —— <strong>零积分成本，立刻见效</strong>。生成类工具（<span class="mk">generate_video</span>）暂时不上，等预检跑顺了再说。</li>
+<li><strong>CLI 不必退役。</strong>两条通道读同一份画布数据（已交叉验证），CLI 在批量操作和脚本可控性上更顺手；MCP 补的是导出、理解、时间线、预检这些 CLI 根本没有的环节。并存没有冲突。</li>
+<li><strong>真正该重新评估的是"终剪"这一段。</strong>我们现在用本地 ffmpeg 合帧做终剪，而 MCP 提供了 <span class="mk">read_timeline</span> / <span class="mk">apply_timeline_edit</span> / <span class="mk">export_video</span> 一整套云端时间线与导出。要不要把终剪搬到云端，取决于导出质量与积分成本是否可接受 —— 这需要跑一次真实导出才知道，属于要花积分才能验证的项目。<strong>是否验证，请你定。</strong></li>
+<li>这次探测用的临时 OAuth 客户端（<span class="mk">libtv-mcp-probe</span>）与 token 存放在工作区 <span class="mk">.tmp\mcp_probe\</span>。接正式通道时建议重新注册一个专用客户端，别复用探测用的这一个。</li>
+</ul>
+</div>
+
+<footer>
+数据来源：libtv-remote-mcp 1.29.1 实际调用返回 · OAuth 元数据 <span class="mk">/.well-known/oauth-authorization-server</span> · 官方插件仓库 <span class="mk">liblib-ai/marketplace</span> README<br>
+本次探测全部为只读调用，未创建节点、未提交生成任务、未消耗积分。所有产物落盘于 <span class="mk">libtv\.tmp\mcp_probe\</span>
+</footer>
+
+</div>
+</body>
+</html>

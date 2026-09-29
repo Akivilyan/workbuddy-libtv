@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LibTV 模型选型全景 · 视频 34 个 / 图片 17 个</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1d212a; --line:#282d38;
+    --fg:#e8ecf3; --dim:#98a2b3; --dim2:#6b7484;
+    --ok:#3ddc97; --warn:#f5b544; --bad:#f2686e; --acc:#5aa9f5; --acc2:#8b7bf0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+    font-size:14.5px;line-height:1.7;padding:40px 24px 64px}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:28px}
+  h1{font-size:25px;margin:0 0 10px}
+  .sub{color:var(--dim);font-size:13.5px}
+  h2{font-size:17px;margin:34px 0 14px;padding-left:11px;border-left:3px solid var(--acc)}
+  h3{font-size:14.5px;margin:20px 0 8px;color:#cfd6e2}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 20px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-weight:600;font-size:12.5px;background:#141821;position:sticky;top:0;z-index:2}
+  tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#1b1f28}
+  tr.hot{background:#141c1a}
+  tr.hot:hover{background:#17221f}
+  .mk{font-family:"Cascadia Mono",Consolas,monospace;font-size:12.5px;color:#a8d8ff;word-break:break-all}
+  .mn{color:var(--dim);font-size:12px;margin-top:2px}
+  .ok{color:var(--ok);font-weight:600}
+  .no{color:var(--dim2)}
+  .hi{color:var(--acc2);font-weight:600}
+  .dim{color:var(--dim2)}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:20px;
+    border:1px solid;margin-left:5px;vertical-align:1px}
+  .b-vip{color:var(--warn);border-color:#5c4a20;background:#241d10}
+  .b-ok{color:var(--ok);border-color:#245c46;background:#12251d}
+  .b-warn{color:var(--warn);border-color:#5c4a20;background:#241d10}
+  .b-bad{color:var(--bad);border-color:#5c292c;background:#241416}
+  .rm{max-width:330px}
+  .ds{color:#cfd6e2}
+  .nt{color:var(--dim);font-size:12.3px;margin-top:4px;line-height:1.55}
+  .pr{color:var(--acc);font-size:12.3px;margin-top:4px}
+  .note{background:#141821;border:1px solid var(--line);border-left:3px solid var(--acc);
+    border-radius:8px;padding:14px 18px;margin-top:14px;font-size:13.5px;color:#cfd6e2}
+  .note.warn{border-left-color:var(--warn)}
+  .note.bad{border-left-color:var(--bad)}
+  .note.ok{border-left-color:var(--ok)}
+  .note strong{color:var(--fg)}
+  ul{margin:8px 0 0;padding-left:20px}
+  li{margin:5px 0}
+  li::marker{color:var(--dim2)}
+  .scroll{max-height:70vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+  footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--dim2);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>LibTV 模型选型全景</h1>
+  <div class="sub">
+    实测时间 <b>2026-09-22 23:5x</b> · CLI <b>1.0.2</b> ·
+    数据来源 <code>libtv model search</code> + <code>libtv model &lt;key&gt;</code> 逐个拉取，
+    <b>非平台价格页，全部为只读查询、未消耗任何积分</b><br>
+    共 <b>34</b> 个视频模型（search 返回 35 条，1 条 schema 拉取失败已剔除）· <b>17</b> 个图片模型
+  </div>
+</header>
+
+<h2>一、先说结论</h2>
+<div class="card">
+  <p style="margin:0 0 10px">
+    <strong>你的工作流有一道硬筛：单镜必须能挂 ≥3 张参考图</strong>（clean 九宫格 + 角色定版 + 场景定版），
+    这是知识包唯一有 A/B 证据的路径。34 个视频模型里<b>只有 10 个</b>过这道筛，其余只能挂 1–2 张、必带视频、或纯文生。
+  </p>
+  <ul>
+    <li><strong>首选候选 · <code>wanx3.0</code></strong> —— 过筛的 10 个里规格最宽的：多图 10 张、时长下限 2s、上限 30s、带视频续写。
+      <span class="dim">代价：多图入口是 <code>mixed2video</code>（平台没给它 <code>image2video</code>），纯图能不能跑<b>没验证过</b>。
+      同规格的 <code>wanx3.0-prime</code> 生成更快（1min vs 3min），但没有 <code>videoExtend2video</code> 档位。</span></li>
+    <li><strong>保底 · <code>star-video2</code></strong>（你已跑通的那个）—— <code>image2video</code> 是知识包实测过的唯一路径，出问题可随时退回。</li>
+    <li><strong>值得比价 · <code>MiniMax-Hailuo-H3</code></strong> —— 分辨率档是 <b>768P / 2K</b>，与 star 系不是同一像素体系；但 schema 未暴露音频开关、且多图同样走 <code>mixed2video</code>。</li>
+  </ul>
+  <div class="note ok">
+    <strong>后续补充（同日 00:20）：wan3.0 的一手官方文档已找到并落地</strong> —— LibTV 的 <code>mixed2videoConfig</code> 与官方规格逐项一致，
+    说明它是对 Wan 3.0 全模态参考的直接封装；官方那套提示词公式可直接搬用。
+    详见 <code>参考文档/wan3.0×LibTV-出片规范.md</code>。
+  </div>
+  <div class="note warn" style="margin-top:14px">
+    <strong>比价时必须注意的一处陷阱：分辨率档名不同 ≠ 像素相同。</strong>
+    <code>720p</code>（star 系 / wanx3.0）、<code>768P</code>（Hailuo 系）是两个不同像素体系，
+    <code>2K</code> 与 <code>1080p</code> 亦然。要比"每积分买到多少像素"，只能拿<b>实际生成的成片尺寸</b>反推
+    —— schema 里查不到像素值。你之前那条片子实测 9:16 档出的是 <b>480×832</b>（比例 15:26，不是标准 9:16），也是同一个道理。
+  </div>
+</div>
+
+<h2>二、过筛的 10 个：能挂多图参考的模型</h2>
+<div class="scroll">
+<table>
+  <thead><tr><th>模型</th><th>分辨率档</th><th>时长</th><th>多图入口</th><th>音画开关</th><th>续写</th><th>说明</th></tr></thead>
+  <tbody>
+<tr class="hot">
+  <td><div class="mk">MiniMax-Hailuo-H3</div><div class="mn">Minimax H3 <span class="badge b-vip">VIP</span></div></td>
+  <td>768P / 2K</td>
+  <td>5–15s</td>
+  <td><span class="ok">mixed2video ≤15 项（纯图 9 张）</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">全模态输入，多参数控制，多场景商用级生成</div><div class="nt">分辨率档是 768P/2K（与 star 系不同像素体系）；多图走 mixed2video；schema 未暴露音频开关</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">happy-horse-1</div><div class="mn">Happy Horse 1.0 <span class="badge b-vip">VIP</span></div></td>
+  <td>720P / 1080P</td>
+  <td>3–15s</td>
+  <td><span class="ok">image2video ≤9 张</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">阿里视频模型，支持多参生成</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">happy-horse-1.1</div><div class="mn">Happy Horse 1.1 <span class="badge b-vip">VIP</span></div></td>
+  <td>720P / 1080P</td>
+  <td>3–15s</td>
+  <td><span class="ok">image2video ≤9 张</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">阿里最新视频模型，一致性与视听质量更可控</div><div class="nt">阿里系，image2video 挂 9 张；schema 未暴露音频开关</div></td>
+</tr>
+<tr class="hot">
+  <td><div class="mk">star-video2</div><div class="mn">Seedance 2.0 VIP <span class="badge b-vip">VIP</span></div></td>
+  <td>480p / 720p / 1080p / 4k</td>
+  <td>4–15s</td>
+  <td><span class="ok">image2video ≤9 张，mixed2video ≤15 项（纯图 9 张）</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">最强视频模型，会员专属通道,15s音画同步</div><div class="nt">你之前跑通的；多图 9 张是知识包唯一有 A/B 证据的路径；独有 4K</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">star-video2-fast</div><div class="mn">Seedance 2.0 Fast VIP <span class="badge b-vip">VIP</span></div></td>
+  <td>480p / 720p</td>
+  <td>4–15s</td>
+  <td><span class="ok">image2video ≤9 张，mixed2video ≤15 项（纯图 9 张）</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">最强视频模型快速版，会员专属通道，15s音画同步</div><div class="nt">2.0 快速版，砍掉 1080p/4K</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">star-video2-mini</div><div class="mn">Seedance 2.0 Mini <span class="badge b-vip">VIP</span></div></td>
+  <td>480p / 720p</td>
+  <td>4–15s</td>
+  <td><span class="ok">image2video ≤9 张，mixed2video ≤15 项（纯图 9 张）</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">最强视频模型mini版，高性价比生成，15s音画同步</div><div class="nt">2.0 高性价比版，同样砍掉 1080p/4K</div></td>
+</tr>
+<tr class="hot">
+  <td><div class="mk">star-video2.5</div><div class="mn">Seedance 2.5 <span class="badge b-vip">VIP</span></div></td>
+  <td>480p / 720p / 1080p</td>
+  <td>4–30s</td>
+  <td><span class="ok">image2video ≤30 张，mixed2video ≤50 项（纯图 30 张）</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="hi">续写</span></td>
+  <td class="rm"><div class="ds">最强视频模型，全能参考，30s音画同步</div><div class="nt">最强档；唯一 image2video 挂 30 张 + 视频续写。定价规则明示「按秒计价，参考视频时长计入总时长」</div><div class="pr">定价：按秒计价，此模型上传的参考视频时长计入总时长</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">viduq2</div><div class="mn">Vidu Q2 <span class="badge b-vip">VIP</span></div></td>
+  <td>540p / 720p / 1080p</td>
+  <td>1–8s</td>
+  <td><span class="ok">image2video ≤7 张</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">多图主体参考，精确控制效果佳</div><div class="nt">image2video 挂 7 张，但时长上限仅 8s</div></td>
+</tr>
+<tr class="hot">
+  <td><div class="mk">wanx3.0</div><div class="mn">Wan 3.0 </div></td>
+  <td>480P / 720P / 1080P</td>
+  <td>2–30s</td>
+  <td><span class="ok">mixed2video ≤15 项（纯图 10 张）</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="hi">续写</span></td>
+  <td class="rm"><div class="ds">全模态参考，支持文档与网页输入，超写实高一致性生成</div><div class="nt">多图走 mixed2video；时长下限低到 2s（按秒计价时更省）；有视频续写</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">wanx3.0-prime</div><div class="mn">Wan 3.0 Prime </div></td>
+  <td>480P / 720P / 1080P</td>
+  <td>2–30s</td>
+  <td><span class="ok">mixed2video ≤15 项（纯图 10 张）</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="hi">续写</span></td>
+  <td class="rm"><div class="ds">超快速生成，全模态参考，超写实高一致性</div><div class="nt">与 3.0 同规格、生成更快（1min vs 3min）；schema 带 supportVideoContinuation 标记，但没有 videoExtend2video 档位 —— 能否延长待实测</div></td>
+</tr>
+  </tbody>
+</table>
+</div>
+<div class="note">
+  <strong>「音画开关」这一列的口径（重要）：</strong>它指的是 <b>schema 里有没有暴露 <code>enableSound</code> 参数</b>，
+  <u>不是</u>"这个模型不能出音频"。标「未暴露」的模型可能只是音画同出、不可关，也可能真的不出音轨 ——
+  <b>空结果不是否定证据</b>，要下结论得实测一条片子看有没有音轨。<br>
+  <span class="dim">对你这套流程（音频全部本地做，见积分瘦身方案杠杆③）来说，这一列的影响其实不大；只有当某镜需要对白口型时才需要在意。</span>
+</div>
+
+<h2>三、其余 24 个视频模型（挂不了多图，已按用途归类）</h2>
+<div class="scroll">
+<table>
+  <thead><tr><th>模型</th><th>分辨率档</th><th>时长</th><th>多图入口</th><th>音画开关</th><th>续写</th><th>说明</th></tr></thead>
+  <tbody>
+<tr class="">
+  <td><div class="mk">MiniMax-Hailuo-2.3</div><div class="mn">Hailuo 2.3 </div></td>
+  <td>768P / 1080P</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">善于表达动作、表情、镜头，更高质感</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">MiniMax-Hailuo-2.3-Fast</div><div class="mn">Hailuo 2.3 Fast </div></td>
+  <td>768P / 1080P</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">善于表达动作、表情、镜头，更快速</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">MiniMax-Hailuo-H3-Max</div><div class="mn">Minimax H3 Max <span class="badge b-vip">VIP</span></div></td>
+  <td>480P / 768P</td>
+  <td>5–15s</td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">后训练极速视频生成，支持文生、图生及首尾帧控制</div><div class="nt">极速版，砍掉 mixed2video → 挂不了多图</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">MiniMax-Hailuo-o2</div><div class="mn">Hailuo 02 </div></td>
+  <td>512P / 768P / 1080P</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">画质稳定，适合打造运动特效场景</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">doubao-seedance-lite</div><div class="mn">Seedance 1.0 Lite <span class="badge b-vip">VIP</span></div></td>
+  <td>480P / 720P / 1080P</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">轻量快速，一键进行日常视频生成</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">doubao-seedance-pro</div><div class="mn">Seedance 1.0 Pro <span class="badge b-vip">VIP</span></div></td>
+  <td>480P / 720P / 1080P</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">高精度提示词理解，40秒生成1080P视频</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">kling-v2-5-turbo-pro</div><div class="mn">Kling 2.5 <span class="badge b-vip">VIP</span></div></td>
+  <td><span class="dim">非固定档位</span></td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">速度快、效果稳定、性价比高</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">kling-v2-6</div><div class="mn">Kling 2.6 <span class="badge b-vip">VIP</span></div></td>
+  <td><span class="dim">非固定档位</span></td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">视频生成模型、直出音画同步</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">kling-v3-motion-control</div><div class="mn">Kling3.0 动作迁移 <span class="badge b-vip">VIP</span></div></td>
+  <td><span class="dim">非固定档位</span></td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">动作控制模型，需输入1张图片、1条视频</div><div class="nt">动作迁移：必须 1 图 + 1 视频</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">kling-v3-omni</div><div class="mn">Kling O3 <span class="badge b-vip">VIP</span></div></td>
+  <td><span class="dim">非固定档位</span></td>
+  <td>3–15s</td>
+  <td><span class="ok">mixed2video 必带视频（图 ≤4）</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">视频编辑模型、参考一致性、音画同出、多镜头</div><div class="nt">可灵编辑向：有 videoEdit2video，多图需带视频（imageMaxWithVideo 4）</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">kling-v3-turbo</div><div class="mn">Kling 3.0 Turbo <span class="badge b-vip">VIP</span></div></td>
+  <td>std / pro</td>
+  <td>3–15s</td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">视频生成模型，高质感、支持多镜头</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">kling-video-o1</div><div class="mn">Kling O1 <span class="badge b-vip">VIP</span></div></td>
+  <td>auto</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="ok">mixed2video 必带视频（图 ≤4）</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">可灵一代编辑模型、支持多模态输入</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">kling-video-o3</div><div class="mn">Kling 3.0 <span class="badge b-vip">VIP</span></div></td>
+  <td><span class="dim">非固定档位</span></td>
+  <td>5–15s</td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">视频生成模型，高质感、支持多镜头</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">midjourney-video</div><div class="mn">Style Video <span class="badge b-vip">VIP</span></div></td>
+  <td>480P / 720P</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">图生视频效果稳定，画面表现力强</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">omnihuman-1.5</div><div class="mn">OmniHuman 1.5 <span class="badge b-vip">VIP</span></div></td>
+  <td>auto</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">多模态数字人视频生成</div><div class="nt">数字人：图 + 音频驱动，单图</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">pixverse-v5.5</div><div class="mn">Pixverse V5.5 <span class="badge b-vip">VIP</span></div></td>
+  <td>540P / 720P / 1080P</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">支持特效、玩法丰富</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">seedance-1.5-pro</div><div class="mn">Seedance1.5 Pro </div></td>
+  <td>480P / 720P / 1080P</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">音画同步，支持多机位镜头，最长可生12秒视频</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">viduq2-pro</div><div class="mn">Vidu Q2 Pro <span class="badge b-vip">VIP</span></div></td>
+  <td>720p / 1080p</td>
+  <td>1–8s</td>
+  <td><span class="ok">mixed2video 必带视频（图 ≤4）</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">Vidu Q2 Pro</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">viduq2-turbo</div><div class="mn">Vidu Q2 Turbo <span class="badge b-vip">VIP</span></div></td>
+  <td>720p / 1080p</td>
+  <td>1–8s</td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">Vidu Q2 Turbo</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">viduq3-pro</div><div class="mn">Vidu Q3 Pro <span class="badge b-vip">VIP</span></div></td>
+  <td>540p / 720p / 1080p</td>
+  <td>1–16s</td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">支持主体参考，精确控制效果佳</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">wanx2.7-video</div><div class="mn">Wan 2.7 </div></td>
+  <td>720P / 1080P</td>
+  <td>2–10s</td>
+  <td><span class="ok">mixed2video 必带视频（图 ≤4）</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">全能参考，支持修改视频画面、剧情、环境</div><div class="nt">有 video2video（改画面/剧情），多图需带视频</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">wanxiang-plus</div><div class="mn">Wan 2.2 </div></td>
+  <td>480P / 720P</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="no">未暴露</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">支持特效、玩法千变万化</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">wanxiang-preview</div><div class="mn">Wan 2.5 </div></td>
+  <td>480P / 720P / 1080P</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">支持特效、直出音画同步</div></td>
+</tr>
+<tr class="">
+  <td><div class="mk">wanxiang-v2-6</div><div class="mn">Wan 2.6 </div></td>
+  <td>720P / 1080P</td>
+  <td><span class="dim">schema 未给</span></td>
+  <td><span class="dim">不支持</span></td>
+  <td><span class="ok">有</span></td>
+  <td><span class="dim">—</span></td>
+  <td class="rm"><div class="ds">音画同步，支持多机位镜头，最长可生15秒视频</div></td>
+</tr>
+  </tbody>
+</table>
+</div>
+<div class="note">
+  这 24 个不是"没用"，是<b>不适合当主流程</b>：它们大多只吃 1–2 张图。
+  值得注意的是几个专用向的 —— <code>kling-v3-omni</code> / <code>wanx2.7-video</code> 支持
+  <b>video2video / videoEdit2video</b>（改已有画面的剧情/环境），<code>omnihuman-1.5</code> 是数字人（图+音频驱动），
+  <code>kling-v3-motion-control</code> 是动作迁移。这些是<b>补镜头的工具</b>，不是生产线。
+</div>
+
+<h2>四、图片模型（17 个）</h2>
+<div class="scroll">
+<table>
+  <thead><tr><th>模型</th><th>分辨率 / 质量档</th><th>比例（部分）</th><th>一次出图</th><th>平台描述</th></tr></thead>
+  <tbody>
+<tr>
+  <td><div class="mk">doubao-seedream-5-0-pro</div><div class="mn">Seedream 5.0 Pro</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>1:1 / 9:16 / 16:9 / 3:4 / 4:3 / 3:2…</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">精准交互式编辑，支持原生多语言排版</td>
+</tr>
+<tr>
+  <td><div class="mk">jimeng-4.6</div><div class="mn">Seedream 4.6</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>1:1 / 9:16 / 16:9 / 3:4 / 4:3 / 3:2…</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">提升人像一致性、平面设计效果</td>
+</tr>
+<tr>
+  <td><div class="mk">lib-image-2</div><div class="mn">Lib Image</div></td>
+  <td>1K / 2K / 4K</td>
+  <td>1:1 / 1:2 / 2:1 / 9:16 / 16:9 / 3:4…</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">最新图片模型、长文本能力突出</td>
+</tr>
+<tr>
+  <td><div class="mk">lib-image-2.5-f</div><div class="mn">Lib Image 2.5 Fast</div></td>
+  <td>1K / 2K / 4K</td>
+  <td>1:1 / 1:2 / 2:1 / 9:16 / 16:9 / 3:4…</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">极速高质量图像生成，兼顾效果与效率</td>
+</tr>
+<tr>
+  <td><div class="mk">lib-image-2.5-s</div><div class="mn">Lib Image 2.5 Pro</div></td>
+  <td>1K / 2K / 4K</td>
+  <td>1:1 / 1:2 / 2:1 / 9:16 / 16:9 / 3:4…</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">精准生成与编辑，复杂指令稳定还原</td>
+</tr>
+<tr>
+  <td><div class="mk">mj-niji7</div><div class="mn">Style Image Niji 7</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>1:1 / 9:16 / 16:9 / 3:4 / 4:3 / 3:2…</td>
+  <td>[4]</td>
+  <td class="rm">动漫高审美模型，风格多样</td>
+</tr>
+<tr>
+  <td><div class="mk">mj-v7</div><div class="mn">Style Image V7</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>1:1 / 9:16 / 16:9 / 3:4 / 4:3 / 3:2…</td>
+  <td>[4]</td>
+  <td class="rm">最佳美学，电影质感，创意能力强</td>
+</tr>
+<tr>
+  <td><div class="mk">mj-v8.1</div><div class="mn">Style Image V8.1</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>1:1 / 9:16 / 16:9 / 3:4 / 4:3 / 3:2…</td>
+  <td>[4]</td>
+  <td class="rm">生图更连贯、细节更丰富、美学水准大幅提升</td>
+</tr>
+<tr>
+  <td><div class="mk">mj-v8.2</div><div class="mn">Style Image V8.2</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>1:1 / 9:16 / 16:9 / 3:4 / 4:3 / 3:2…</td>
+  <td>[4]</td>
+  <td class="rm">电影感全面升级，精准还原光影、人物与真实材质</td>
+</tr>
+<tr>
+  <td><div class="mk">nebula-2-flash</div><div class="mn">General image V2</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>auto / 1:1 / 9:16 / 16:9 / 3:4 / 4:3…</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">支持联网搜索、文字准确、速度更快</td>
+</tr>
+<tr>
+  <td><div class="mk">nebula-ultra</div><div class="mn">General image Pro</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>auto / 1:1 / 9:16 / 16:9 / 3:4 / 4:3…</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">最强图片编辑模型，一致性好</td>
+</tr>
+<tr>
+  <td><div class="mk">qwen</div><div class="mn">Qwen Image</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>1:1 / 9:16 / 16:9 / 3:4 / 4:3 / 3:2…</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">Qwen 生图模型，文字排版能力强</td>
+</tr>
+<tr>
+  <td><div class="mk">qwen-edit</div><div class="mn">Qwen Edit</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>1:1 / 9:16 / 16:9 / 3:4 / 4:3 / 3:2…</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">Qwen系编辑模型，精细可控</td>
+</tr>
+<tr>
+  <td><div class="mk">qwen-image-3</div><div class="mn">Qwen image 3.0</div></td>
+  <td>1K / 2K</td>
+  <td>auto / 1:1 / 9:16 / 16:9 / 3:4 / 4:3…</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">擅长复杂版面与精准文字的高质量生图模型</td>
+</tr>
+<tr>
+  <td><div class="mk">seedream-4.5</div><div class="mn">Seedream 4.5</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>1:1 / 9:16 / 16:9 / 3:4 / 4:3 / 3:2…</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">多角色一致性、擅长中式风格</td>
+</tr>
+<tr>
+  <td><div class="mk">seedream-5</div><div class="mn">Seedream 5.0 Lite</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>1:1 / 9:16 / 16:9 / 3:4 / 4:3 / 3:2…</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">支持联网搜索，擅长中式风格、审美提升</td>
+</tr>
+<tr>
+  <td><div class="mk">z-image</div><div class="mn">Z-image Turbo</div></td>
+  <td><span class="dim">见 search 列表</span></td>
+  <td>1:1 / 9:16 / 16:9 / 3:4 / 4:3</td>
+  <td>[1, 2, 4]</td>
+  <td class="rm">极速生成，适合真实感图片</td>
+</tr>
+  </tbody>
+</table>
+</div>
+<div class="note warn">
+  <strong>图片侧的两条省钱提醒：</strong>
+  <ul>
+    <li><b>Midjourney 系（<code>mj-*</code>）的 <code>count</code> 固定为 <code>[4]</code></b> —— 一次必出 4 张，按张计价时是 4 倍。这四个模型（v7 / v8.1 / v8.2 / niji7）不适合当生产主力。</li>
+    <li><code>lib-image-2.5-s/f</code>、<code>lib-image-2</code> 是唯一同时暴露 <b>1K/2K/4K</b> 与
+      <b>low→max 五档质量</b>的，档位最细、最容易做"草图用低档、定版用高档"的分级省钱。</li>
+  </ul>
+  定版图/九宫格重绘的主力仍是知识包验证过的 <code>nebula-ultra</code>；<code>seedream</code> 系强在画面内中文文字，
+  <code>qwen-image-3</code> 擅长版面与精准文字。
+</div>
+
+<h2>五、开工前必须先实测的三件事（都不消耗积分）</h2>
+<div class="card">
+  <table>
+    <thead><tr><th>#</th><th>待验证</th><th>为什么必须验</th><th>怎么验（零成本）</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><b><code>wanx3.0</code> 的 <code>mixed2video</code> 能不能只挂图片</b></td>
+        <td>它没有 <code>image2video</code>，多图入口只有 mixed2video。schema 写的是「1–15 项素材」，纯图是否成立没人验证过 —— 这决定首选候选是否可用</td>
+        <td>建一个 video 节点、挂 3 张图、<b>不带 <code>--run</code></b>，看参数是否被拒</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><b>创建节点时 <code>-s model=</code> 到底写哪个名字</b></td>
+        <td>两处命名<b>不一致</b>：<code>model search</code> 说 <code>star-video2</code> 叫「Seedance 2.0 VIP」，而 <code>model star-video2</code> 的 schema 里叫「StarVideo 2.0」。
+          另有 <code>wanx3.0-prime</code>、<code>lib-image-2.5-s/f</code> 的 schema <b>压根没有 modelName 字段</b>（<code>None</code>）</td>
+        <td>同上：建节点不带 <code>--run</code>，看平台接受哪个字符串</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><b>各档位的实际输出像素</b></td>
+        <td>「720p / 768P / 2K」只是档位名。你那条 9:16 实测出 480×832，说明平台不按教科书尺寸出图 —— 影响下游超分目标尺寸怎么定</td>
+        <td>只能等一条真实生成出来再 <code>ffprobe</code>（这一步会花积分，属正式开工第一步）</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>六、你去网页要核的价格清单</h2>
+<div class="card">
+  <div class="note bad" style="margin-top:0">
+    <strong>CLI 查不到任何价格 / 余额信息</strong>（已复核：<code>model search</code> 只在 <code>star-video2.5</code> 上返回了一条
+    <code>pricingRule</code> 文本，其余 33 个全为空；也没有余额命令）。所以下表只能你人工核。
+  </div>
+  <table>
+    <thead><tr><th>#</th><th>要看什么</th><th>为什么要看</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><b>同一档位下 <code>wanx3.0</code> / <code>star-video2</code> / <code>MiniMax-Hailuo-H3</code> 的单秒价</b></td>
+        <td>三个都能挂多图，价格差决定主力选谁</td></tr>
+      <tr><td>2</td><td><b>各模型 720p 与 1080p 的价差</b></td>
+        <td>你已经确认"越高越贵" → 那么本地超分这条链就成立，但要算清省下的钱够不够抵超分带来的质量损失</td></tr>
+      <tr><td>3</td><td><b><code>mixed2video</code> 是否与 <code>image2video</code> 同价</b></td>
+        <td>wanx3.0 的多图只能走 mixed2video。若 mixed 模式更贵，"便宜"这个前提就不成立</td></tr>
+      <tr><td>4</td><td><b>图片模型按张还是按次计价</b>、<code>quality</code> 档位（1K/2K/4K）是否影响单价</td>
+        <td>决定"草图用低档、定版用高档"这套分级策略能不能省到钱</td></tr>
+      <tr><td>5</td><td><b>当前余额</b>，据此定这次开工的批次上限</td>
+        <td>我查不了，只能你定；建议按"每批 3–5 镜"倒推能跑几批</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>
+  本报告全部数据来自 2026-09-22 夜间 CLI 实测（<code>libtv model search -t video|image</code> 与 <code>libtv model &lt;key&gt;</code> 逐个拉取 schema），
+  未采信任何快照或第三方文章；模型 schema 会随平台版本漂移，<b>引用前需重新拉取</b>。<br>
+  人工判读部分（推荐排序、"这几条要留意"）已与平台字段区分开，只作决策参考，不构成平台保证。<br>
+  原始 schema 落在 <code>.tmp/schemas/</code>（51 份 JSON），可追溯。
+</footer>
+
+</div>
+</body>
+</html>

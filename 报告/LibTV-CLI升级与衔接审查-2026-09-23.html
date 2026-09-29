@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LibTV CLI 升级与衔接审查 · 2026-09-23</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1d212a; --line:#282d38;
+    --fg:#e8ecf3; --dim:#98a2b3; --dim2:#6b7484;
+    --ok:#3ddc97; --warn:#f5b544; --bad:#f2686e; --acc:#5aa9f5; --acc2:#8b7bf0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+    font-size:14.5px;line-height:1.7;padding:40px 24px 64px}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:28px}
+  h1{font-size:25px;margin:0 0 10px}
+  .sub{color:var(--dim);font-size:13.5px}
+  h2{font-size:17px;margin:34px 0 14px;padding-left:11px;border-left:3px solid var(--acc)}
+  h3{font-size:14.5px;margin:20px 0 8px;color:#cfd6e2}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-weight:600;font-size:12.5px;background:#141821}
+  tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#1b1f28}
+  .mk{font-family:"Cascadia Mono",Consolas,monospace;font-size:12.5px;color:#a8d8ff;word-break:break-all}
+  .ok{color:var(--ok);font-weight:600}
+  .no{color:var(--dim2)}
+  .hi{color:var(--acc2);font-weight:600}
+  .bad{color:var(--bad);font-weight:600}
+  .warnc{color:var(--warn);font-weight:600}
+  .dim{color:var(--dim2)}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:20px;
+    border:1px solid;margin-left:5px;vertical-align:1px}
+  .b-ok{color:var(--ok);border-color:#245c46;background:#12251d}
+  .b-warn{color:var(--warn);border-color:#5c4a20;background:#241d10}
+  .b-bad{color:var(--bad);border-color:#5c292c;background:#241416}
+  .b-acc{color:var(--acc);border-color:#22405c;background:#101d2b}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .stat .n{font-size:22px;font-weight:600;line-height:1.2}
+  .stat .l{color:var(--dim);font-size:12.5px;margin-top:4px}
+  .note{background:#141821;border:1px solid var(--line);border-left:3px solid var(--acc);
+    border-radius:8px;padding:14px 18px;margin-top:14px;font-size:13.5px;color:#cfd6e2}
+  .note.warn{border-left-color:var(--warn)}
+  .note.bad{border-left-color:var(--bad)}
+  .note.ok{border-left-color:var(--ok)}
+  .note strong{color:var(--fg)}
+  ul{margin:8px 0 0;padding-left:20px}
+  li{margin:5px 0}
+  li::marker{color:var(--dim2)}
+  code{background:#1e232d;padding:1px 5px;border-radius:4px;font-family:"Cascadia Mono",Consolas,monospace;font-size:12.5px;color:#a8d8ff}
+  footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--dim2);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>LibTV CLI 升级与旧资产衔接审查</h1>
+  <div class="sub">升级 1.0.2 → 1.1.3 · 审查时间 2026-09-23 02:00–02:15 · 全部验证为实测，未花积分<br>
+  升级目的：消除「牵一发动全身」的衔接缺漏 —— 逐一核对所有基于旧 CLI 建立的资产</div>
+</header>
+
+<h2>一、升级结果</h2>
+<div class="stats">
+  <div class="stat"><div class="n ok">1.1.3</div><div class="l">本机 CLI 当前版本</div></div>
+  <div class="stat"><div class="n ok">3/3</div><div class="l">验证项全通过</div></div>
+  <div class="stat"><div class="n warnc">1</div><div class="l">查出的高危衔接缺漏</div></div>
+  <div class="stat"><div class="n warnc">3</div><div class="l">需改动的行为约定</div></div>
+</div>
+
+<div class="note ok">
+<strong>升级已完成并端到端验证。</strong>
+<code>--version</code> → 1.1.3；<code>account info</code> 正常（凭据沿用，<strong>不用重新登录</strong>）；<code>project list</code> 正常（画布列表与升级前一致）。
+旧版二进制已备份至 <code>C:\Users\DCZX2\.libtv\_backup\libtv-1.0.2.exe</code>，可随时回滚。
+</div>
+
+<h2>二、查出的最大衔接缺漏 <span class="badge b-bad">高危</span></h2>
+
+<div class="note bad">
+<strong>旧的版本发现渠道已经"假最新"了 —— 照它走会把 CLI 降级回去。</strong><br><br>
+<code>https://liblibai-web-static.liblib.cloud/cli/latest/manifest.json</code> 现在仍返回 <code>{"version":"1.0.2"}</code>，
+但实际最新已经是 <strong>1.1.3</strong>。它<strong>已停止同步</strong>。<br><br>
+危险点在于：<strong>本机的官方安装脚本正是按这个文件取版本号的</strong> —— 也就是说，谁再跑一次旧安装脚本，
+会安静地把 1.1.3 <strong>降级回 1.0.2</strong>，而且不会报任何错。<br><br>
+官方 1.1.3 的 <code>scripts/install.md</code> 已改口：版本号、安装脚本 URL、skill 包 URL <strong>统一由活动接口下发</strong>，
+并明确要求"<strong>不要再按 <code>…/cli/&lt;version&gt;/…</code> 自行拼接</strong>"。
+</div>
+
+<div class="note warn">
+<strong>顺带暴露一个方法论问题，值得单独记下来。</strong><br>
+我们那份接入规程里写过一条"版本双来源互证"：本地 <code>--version</code> = 1.0.2，官方 <code>manifest.json</code> = 1.0.2，
+"两个独立来源一致，才敢说装的是最新版"。<br>
+<strong>当时对，现在错。</strong>这两个来源其实同源于同一份未更新的 CDN 文件 —— <strong>一致性只是"同错"。</strong>
+跨来源互证要挑<strong>发布链路不同</strong>的来源（本地二进制自报 / 活动配置接口 / 文件更新时间戳），
+不能是同一 CDN 下的两个文件。这条已写回规程文档。
+</div>
+
+<h3>唯一权威的版本发现接口</h3>
+<div class="note">
+<code>https://api2.liblib.art/api/www/landing-activities/getById?id=240</code><br><br>
+响应 <code>data.linkUrl</code> 是一段 JSON 字符串：
+<code>{ version, install:{CMD,PowerShell,shell}, skill }</code>。
+实测返回 <code>version = 1.1.3</code>。二进制分包地址：<code>…/cli/&lt;version&gt;/libtv-windows-amd64.zip</code>。
+</div>
+
+<h2>三、用官方手册核对出的三处行为变化 <span class="badge b-warn">必须改</span></h2>
+
+<table>
+<thead><tr><th style="width:150px">项</th><th style="width:110px">旧认知</th><th>1.1.3 实际（官方手册 + 实测）</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>素材指代</strong><br><span class="dim">原【待实测】项 #3</span></td>
+  <td class="bad">悬而未决，只能靠出片结果判断</td>
+  <td><span class="ok">结案。CLI 有官方占位符 <code>{{Node …}}</code>。</span><br>
+  · <code>{{Node "节点名"}}</code> —— 成对引号包展示名；画布内同名多个 → <strong>整条写入中止并报错</strong><br>
+  · <code>{{Node &lt;nodeKey&gt;}}</code> —— 不带引号，直接锚定身份，同名场景用它<br>
+  · 只能引用<strong>已连线（<code>--left</code>）</strong>的上游素材，未连线报错；回读节点时 CLI 一律显示 key 形态<br>
+  <span class="hi">比「图1」强的地方：写错会报错，不再是静默失败。</span></td>
+</tr>
+<tr>
+  <td><strong><code>--run</code> 语义</strong></td>
+  <td class="bad">当成"提交后返回"，需要自己轮询</td>
+  <td><span class="ok">是<strong>同步等待</strong>命令</strong>：内部提交 → 轮询 → 写回画布 → stdout 输出终态 JSON 才退出。<br>
+  ⇒ <strong>外部脚本不要再包一层轮询、不要加 timeout、看到 <code>[run] task=…</code> 也不要提前收工。</strong></td>
+</tr>
+<tr>
+  <td><strong>新增可用项</strong></td>
+  <td class="no">不存在</td>
+  <td><code>-u/--update</code>（改节点自身属性，写 <code>data</code> 顶层）· <code>--name</code>（改名）·
+  <code>--x/--y</code>（坐标，写在 <code>create</code> <strong>之前</strong>）·
+  <code>download --without-ai-watermark</code> / <code>--vip</code> · <code>account list/use</code> · <code>workspace</code> 命令组</td>
+</tr>
+</tbody>
+</table>
+
+<div class="note ok">
+<strong>一条好消息：我们依赖的 <code>download</code> 没有变。</strong>
+<code>-n</code> / <code>-p</code> / <code>-g</code> / <code>-o</code> 全部照旧，跨画布搬素材那套命令<strong>继续可用</strong>。<br>
+（注意：官方 skill 包里<strong>没有</strong> <code>download.md</code>，所以这条只能以 <code>libtv download --help</code> 实测为准 —— 已实测。）
+</div>
+
+<h2>四、资产影响面清单</h2>
+<table>
+<thead><tr><th style="width:250px">资产</th><th style="width:110px">状态</th><th>处理</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>参考文档\wan3.0×LibTV-出片规范.md</code></td>
+  <td class="ok">已修正</td>
+  <td>版本锚点改 1.1.3；§4.0 命令表补 <code>workspace</code>；<strong>§4.1 整节重写为「用 <code>{{Node …}}</code>」并结案</strong>；§8 清单 #3 标结案；<strong>新增 §9「CLI 1.1.3 差异」</strong>（新增命令 / 术语 / 行为语义 / 版本发现）</td>
+</tr>
+<tr>
+  <td><code>待并入-新工具接入规程.md</code></td>
+  <td class="ok">已修正</td>
+  <td>「版本双来源互证」处<strong>插入 2026-09-23 更正块</strong>：manifest 失效、会降级、唯一权威接口 + 方法论教训</td>
+</tr>
+<tr>
+  <td>项目记忆 <code>.workbuddy\memory\</code></td>
+  <td class="ok">已修正</td>
+  <td>MEMORY.md：CLI 版本改 1.1.3、整节重写「CLI 版本与官方 Skill 包」、陷阱 #3 改结案、关键路径表更新；当日日志补完整过程</td>
+</tr>
+<tr>
+  <td><code>参考文档\libtv-cli-skill\</code></td>
+  <td class="ok">新增</td>
+  <td>官方配套 Skill 包落位（45 文件：<code>SKILL.md</code> + <code>commands/</code> + <code>examples/</code> + <code>model-schema/</code> + <code>node-types/</code> + <code>scripts/</code> + <code>_原包.zip</code>）——<strong>这是权威 CLI 手册</strong></td>
+</tr>
+<tr>
+  <td><code>LibTV视频自动化环境就绪报告.html</code></td>
+  <td class="warnc">待处理</td>
+  <td>正文标着 <code>libtv 1.0.2</code> / 「CLI 版本 1.0.2」→ <strong>已过时</strong>。建议改标注或重出</td>
+</tr>
+<tr>
+  <td><code>LibTV模型选型全景-2026-09-22.html</code></td>
+  <td class="warnc">待处理</td>
+  <td>标"视频 34 个 / 图片 17 个"，而 MCP <code>search_models(video)</code> 现返回 <strong>43 个</strong>。可能是口径或时点差异 → <strong>需重拉核对</strong>，不能直接断言过时</td>
+</tr>
+<tr>
+  <td>第三方知识包 <code>libtv-video-production</code><br><span class="dim">junction → <code>libtv-video-agent</code></span></td>
+  <td class="warnc">建议处置</td>
+  <td>官方 CLI 手册到手后，它的「CLI 命令矩阵」部分已被权威版本取代；其价值只剩方法论章节。<strong>建议退役或降级为"方法论参考"</strong>。⚠️ 规则：第三方 skill 原文不改，只能标注 / 换挂载方式 —— 需要你定</td>
+</tr>
+<tr>
+  <td>官方 skill 包是否挂进 <code>~/.workbuddy/skills/</code></td>
+  <td class="warnc">待你定</td>
+  <td>现已放在工作区 <code>参考文档\</code> 下（可查、不影响运行）。要挂成技能需先过一道安全审计流程</td>
+</tr>
+</tbody>
+</table>
+
+<h2>五、结论</h2>
+<div class="note">
+<strong>1. 你担心的"衔接缺漏"确实存在，而且找到了一处高危险的。</strong>
+不是 CLI 命令不兼容 —— 恰恰相反，我们实际用到的命令（<code>node create -t</code>、<code>--left</code>、<code>-s</code>、<code>model search</code>、<code>project use</code>、<code>upload</code>、<code>download</code>）<strong>参数全部没变</strong>。
+危险的是<strong>版本发现链路</strong>：旧的 <code>manifest.json</code> 会给假最新，且旧安装脚本会据此降级。
+</div>
+<div class="note">
+<strong>2. 我们原先标着【待实测】的素材指代问题，其实一直有官方答案。</strong>
+<code>{{Node …}}</code> 就在官方命令手册里，我们此前没拿到那份手册（当时只装了第三方知识包）。
+这次升级顺带把官方 skill 包拿到了 —— <strong>这类"文档缺口导致的重复摸索"才是真正要防的衔接风险</strong>。
+</div>
+<div class="note warn">
+<strong>3. 还剩三件要你拍板。</strong>
+① 两份旧报告（就绪报告 / 模型选型全景）要不要重出；
+② 第三方知识包 <code>libtv-video-production</code> 退不退役；
+③ 官方 CLI 手册要不要挂成技能（需先跑安全审计）。
+</div>
+
+<footer>
+数据来源：<code>libtv --version</code> / <code>libtv &lt;cmd&gt; --help</code> 实测 · 官方 skill 包 <code>libtv-cli-skill</code> · 活动接口 <code>getById?id=240</code> · <code>latest/manifest.json</code> 实测<br>
+本次升级与审查全程零积分消耗。备份：<code>C:\Users\DCZX2\.libtv\_backup\libtv-1.0.2.exe</code>
+</footer>
+
+</div>
+</body>
+</html>
