@@ -8,6 +8,7 @@
 | 用途 | 位置 |
 |---|---|
 | CLI | `C:\Users\DCZX2\.libtv\libtv.exe`（1.1.3） |
+| **版本库** | ★ 本目录**已入 git**（2026-09-29），远端 `Akivilyan/workbuddy-libtv`（private）。**媒体与 `.tmp/` `.libtv/` 已 ignore** —— 别再把成片/抽帧往库里塞 |
 | Python | `C:\Users\DCZX2\.libtv\venv\Scripts\python.exe` |
 | **规范 · 镜头级**（先读） | `参考文档\wan3.0×LibTV-出片规范.md`（§0–§13） |
 | **规范 · 片子级** | `参考文档\短视频工程规范.md` |
