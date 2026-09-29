@@ -1,0 +1,134 @@
+# LibTV 视频生产 · 项目长期记忆
+
+> 工作区 `C:\Users\DCZX2\WorkBuddy\libtv`，一部片子一个子目录。
+> 详细规范 `参考文档\wan3.0×LibTV-出片规范.md`；过程台账在 `memory\YYYY-MM-DD.md`（不注入）。
+> 本文只放**每次会话必须先知道的**。
+
+## 铁律（不许违反）
+
+1. **生成视频前必须先报方案**（挂哪些图 / prompt 要点 / 时长 / 全套参数），得到「可以 / OK」才生成。**绝不擅自触发。**
+2. **单镜只生成一次 720p**，不做「720p 试错 → 1080p 定稿」。
+3. **中间产物主动给财哥看**，别攒到成片才交。
+4. **影像文件要删之前先问** —— 重做要花积分，已生成的样片是验证素材。
+
+## 模型与成本
+
+- **主力 = wan3.0**（`-s model=Wan 3.0`；变体 `Wan 3.0 Prime`）。Seedance 2.5 同规格贵 5 倍，退为备用。
+- 计价 **8 积分/秒**（720p/10s/带音频 = 80 积分），**分辨率越高越贵**；**音频不计费**。
+  按秒计价 ⇒ 切几刀不影响总价，只有「总时长」与「重生成次数」决定花费。
+- **CLI 查不到余额/单价**，只能财哥网页看；不提议装云 CLI。
+- 续写（`videoExtend2video`）**只有 wanx3.0 有**，prime 不行。
+  ★ **结案（2026-09-23 预检实测）：`Wan 3.0` 的云端 modelKey 就是 `wanx3.0`** → **主力模型本身就能延长**，「多镜头公式 + videoExtend2video」组合可直接用。
+
+## 关键路径
+
+| 用途 | 路径 |
+|---|---|
+| CLI | `C:\Users\DCZX2\.libtv\libtv.exe`（1.1.3） |
+| Python venv | `C:\Users\DCZX2\.libtv\venv\Scripts\python.exe` |
+| 出片规范（先读） | `参考文档\wan3.0×LibTV-出片规范.md` |
+| ★ **官方提示词优化 skill（五段式规范）** | `参考文档\官方wan3-pe提示词优化skill\SKILL.md` |
+| 官方 CLI 手册（技能 libtv-cli） | `参考文档\libtv-cli-skill-1.1.3\`（45 文件，**查命令以它为准**） |
+| 阿里云官方副本 | `参考文档\阿里云官方-万相3.0*.md`（四套提示词公式 + 多镜头公式 + 全模态规格） |
+| 第三方知识包（已解除引用） | `参考文档\第三方知识包-保留\`（先看 `适用性说明.md`） |
+
+第三方包写于 Seedance 时代，**`{{Image 1}}` 类写法一律作废**；其中 **`editing-pipeline.md`（ffmpeg 终剪）与 `content-safety-and-env.md`（审核 / 真人墙 / Windows 中文坑）官方完全没有，是唯一来源**。
+
+## 官方术语与通道
+
+- **「项目（workspace）= 工作区」是容器，「画布（project）」才是画布**；1.1.3 新增 `workspace` 子命令与 `workspaceId` / `teamId`。
+- ★ **按名字找目标先分清层级**：财哥说的「项目名」通常指**工作区** → `workspace list --name <词>` → `workspace use <folderId>` → `project list`。
+  ⚠️ **`project list` 不带 `-w` 时列的是账号全部画布**，容易"顺手找到一个近似名"就误判 —— 先定工作区再看画布。
+- 三条并列通道：Plugin（Codex 专属，WorkBuddy 装不了）/ MCP（`https://mcp.liblib.tv/mcp`，OAuth）/ **CLI（主力）**。
+- **MCP 已接入 WorkBuddy**（48 工具 / 43 视频模型，纯远端，不依赖本地 CLI）。CLI 完全没有的五块：
+  ① 成片导出 `export_readiness` / `export_video` / `export_status` ② 媒体理解 `inspect_media` / `check_continuity`
+  ③ Script V2 与时间线 ④ **`validate_generation_plan`** ⑤ Agent 委托 `run_agent` 等 8 个。
+  - ★ `validate_generation_plan`：零成本、不写画布，吐云端最终请求体（`imageList` 含 url 与像素尺寸、`imageListOrder`、`extendPrompt`）→ **「报方案」的客观预检手段**。
+    **实测可用（2026-09-23）**：传 `projectId` + `referenceImageNodes`（节点 key）+ `model` + `mode` + `params`，返回 `valid/status`、逐图 `usable`、`effectiveParams`、`seedance.unchecked`（待审素材数）、`createPreconditions.nameAvailable`。
+    ⚠️ **它只能验「装配」，不评「画面效果」** —— 官方对同类检查的定性同此（*结构检查不等于创作质量认证*）。**生成前平台没有任何预测画面的能力**。
+  - ⚠️ 参数命名 camelCase / snake_case 两套混用 → **先读该工具自己的 inputSchema**；`enableSound` 是字符串 `"on"` / `"off"`。
+
+## CLI 版本
+
+- **查最新版唯一权威**：`https://api2.liblib.art/api/www/landing-activities/getById?id=240` → `data.linkUrl`（JSON 串，含 version / install / skill）。
+- ⚠️ **`…/cli/latest/manifest.json` 已停更**（仍返回 1.0.2）→ 照它走会**降级**。CLI 无自更新机制，`--version` 只报自己。
+- 旧版备份 `C:\Users\DCZX2\.libtv\_backup\libtv-1.0.2.exe`。
+
+## 1.1.3 下必须改的三件事
+
+1. ★ **prompt 指代用 `{{Node "节点名"}}`**（或 `{{Node <nodeKey>}}`，不带引号）。官方占位符层，**只能引用已连线的上游素材，写错会报错**。「图1」/ `{{Image 1}}` 作废。
+   ★ **落库时会被转写**（2026-09-23 预检实测）：`{{Node "名"}}` → 发给模型时变成 `{{Image N}}`，N = 该节点在 `imageList` 里的序号 = 连线顺序。所以「01→06 依次连线」即 Image 1→6，表层语法与官方序号天然对齐。
+2. **`--run` 是同步等待命令**（内部提交 → 轮询 → 写回，stdout 出终态 JSON 才退出）—— 不要自己包轮询、不要加 timeout、看到 `[run] task=…` 别提前收工。
+3. 新增：`-u/--update`（改节点属性）· `--name` · `--x/--y`（写在 `create` 之前）· `download --without-ai-watermark` / `--vip` · `account list/use`。
+
+## 参数（wan3.0）
+
+`modeType=mixed2video`（多图参考唯一入口）｜`ratio=9:16`｜`resolution=720P`｜`duration=2–30`｜`enableSound=off`｜`count=1`（别动）｜`-s model=Wan 3.0`
+
+- 输出像素：`720P` + `9:16` → **720×1280**（ffprobe 实测）。成片强制 9:16；源片非 9:16 用「放大到覆盖 → 居中裁切」，**不拉伸**。
+- ★ **智能扩写 `extendPrompt` 别关**：默认开，**官方 schema tips 原文「关闭后生成效果大概率会下降」**。
+  （2026-09-23 修正旧约定 —— 此前"用公式写提示词就关掉"的推论是错的。）
+
+### ★ 提示词规范（写 prompt 前必看）
+
+**按官方 `wan3-pe` skill 的五段式写**：【核心任务】（集中声明**每份素材的职责与采用范围**）→【情节概要】（编号节点 + 用户时间戳）→【音频风格】→【运镜与核心约束】→【负面提示词】。
+
+- **图生视频公式：图已定死主体 / 场景 / 风格，正文只写「动态 + 运镜」，不复述画面里已有的东西**（复述 = 浪费字数 + 稀释指令）。
+- 美学控制词表在 `阿里云官方-万相提示词指南.md`（光源 / 光线 / 时间段 / 景别 / 构图 / 焦段 / 机位角度 / 镜头类型 / 色调 / 运镜 / 视觉风格 / 特效）——**成串调用，别裸写散文**。
+- **负面提示词必写**（折叠 / 变形类尤其）：`CG感，塑料质感，画面模糊，噪点，横向条纹伪影，结构错位…`。
+- 反面教材 = 2026-09-23 v1 那条片：一段散文、零美学控制词、音效段空着、无负面词 → 折叠中段出条纹噪点，被财哥当场判"菜狗水平"。
+
+## 精细控制参数（网页端提示词上方那排按钮，2026-09-23 查证）
+
+| 按钮 | 参数 | CLI 能否调 |
+|---|---|---|
+| 参考 | `imageList` / `videoList` / `audioList` | ✅ `--left-add`（顺序 = `Image 1…N`） |
+| 标记 | `magic` / `mention` / `magicList` | ✅ 用 `{{Node "名"}}` 即等效 |
+| **运镜** | `params.cameraControl` + `params.cameraPresets` | ✅ `-s`（**实测可写**） |
+| 特效 | `params.template` + 白名单 config `127` | ⚠️ 可透传但**无 schema 校验** |
+| 角色库 | `subjectList` | ❌ 账号级资产，无 API |
+| 文档 / 链接 | `supportAttachment.attachment` / `.link` | ❌ CLI `upload` 只支持图/视频/音频 |
+
+- ★ **「运镜」= 电影机／镜头语言预设**（4 类 29 项：机身 9 / 镜头 10 / 焦段 7 / 光圈 3），每项自带一段英文 prompt 片段。全集存 `参考文档\LibTV运镜预设-config186.md`。
+- `params.settings` **只认 `duration` / `enableSound` / `ratio` / `resolution`**（写别的直接报错）；`extendPrompt` 走 `advancedSettings`；`cameraControl` 等写 `params` 顶层。
+- ⚠️ **Wan 3.0 不支持 `multi_shot` / `multi_prompt`**（实测报错列出允许字段）→ **多镜头只能写在同一条 prompt**（官方多镜头公式）。
+- **服务端配置**（`api2.liblib.art/api/www/landing-activities/getById?id=`，`data.linkUrl` 是 JSON 串）：
+  `186` 运镜预设 · `127` 特效模型白名单 · `243` 素材库面板 · `188` 斜杠命令 · `190` 音色表 · `240` CLI 版本。
+
+## 素材通路
+
+**素材进生成的唯一方式 = 画布节点 + 连线（`--left`）。** 账号级「资产」库**没有任何 API** → 手动上传的素材必须拖进画布，或直接给本地路径 `libtv upload`。
+
+- `mixed2video` 纯图挂载成立（图 ≤10，或图 + 视频总数 1–15）。
+- **`imageList` 顺序 = 连线顺序**（先 `--left-add` 排第 1）→ 对应官方「图1 / 图2」。
+- 跨画布搬素材：`download -n "<节点名>" -p <旧画布uuid> -o <目录>` → `upload "<新名>" --resource <本地路径>`（水印接口 404 告警不影响文件）。
+- ⇒ **素材节点建一次、多镜连线复用**，等价于项目内素材库。
+
+## 已验证结论
+
+- ✅ `-s model=` 只认 **modelName**（以 `model search` 为准），传 modelKey 报错。
+- ✅ 多镜头公式**服从度极高**，可作主力范式。A 组实测：切点 4.97 / 9.97s vs 要求 5 / 10s，三镜角色与陈设一致性良好。产物 `测试-多镜头A组\`。
+- ✅ 成本对照：1 次 15s 与 3 次 5s **都是 120 积分**，差别只在返工粒度（一段废 120 vs 一镜废 40）。
+- ⇒ **最优组合大概率 = 多镜头公式 + 视频延长**（段内靠多镜头保连贯，段间用 `videoExtend2video` 接真实尾帧）。
+
+## 云端导出边界
+
+`unsupported` = speed / transitions / transforms / subtitles / per_clip_volume / per_track_volume / audio_source_trim ⇒ **云端只能「按 clips 顺序拼接 + 全局音量」**。精剪（转场 / 变速 / 字幕 / 超分）**本地 ffmpeg 仍更强**。
+
+## 本地超分（ncnn-Vulkan）
+
+工具在 `libtv\.tmp\ncnn\`，A770 正常。流程 = 拆帧 → `realesrgan-x4plus` 超分 → cover 裁切 → 合帧（CRF 16 / preset slow）。
+
+- **质量优先选 x4plus**（单跑 7.2s/帧含启动开销，整片批处理 ≈4s/帧，150 帧实测 10m06s）。`-t` 默认 auto 已最优。
+- 本地超分**不花积分**，只有时间成本。
+
+## 陷阱
+
+1. `-s model=` 只认 modelName。
+2. **「不写」≠「没有」**：wan3.0 有声默认开启，提示词不提台词/配乐模型会自己加 → 无声画面必须 `enableSound=off` **且**提示词写「无台词」「无背景音乐」。
+3. 参考图指代用 `{{Node "节点名"}}`，写错报错。
+4. **真人形象参考图被硬拦**（CG 化、裁剪都拦），只能网页端本人扫码人脸认证，CLI 绕不过。
+5. 阿里云官方默认 **1080P**、LibTV 默认 **720P**，别搞反。
+6. `libtv` 在 Git Bash 下中文输出正常；给 `python` / `ffmpeg` 传路径必须 `C:\…`，不能 `/c/…`。
+7. **去水印实测未生效**（2026-09-23，同帧双版本对比）：`download --without-ai-watermark` 与再加 `LIBTV_DOWNLOAD_IS_VIP=1`，**两版右下角都带 `LibTV` 角标** → 去水印大概率取决于账号本身是否为会员。
+   `--vip` 的实际价值在**码率**：同一 13s 片子 **25.7MB vs 4.5MB**（≈5.7×）→ **高码率版留给本地超分用**。
